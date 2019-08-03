@@ -46,7 +46,7 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         //子弹控制器,if是为了没有开火时不进行循环
         if (fire){
             index++;
-            if(index>8){
+            if(index>5){
                 index=0;
             }
         }
@@ -126,12 +126,15 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         }
         if (e.getKeyCode()==KeyEvent.VK_J){
             fire=true;
-            zidan=1;
+            if(GameFrame.bulletkey==1){
+                zidan=1;
+            }
+            if (GameFrame.bulletkey==2){
+                zidan=2;
+            }
+
         }
-        if (e.getKeyCode()==KeyEvent.VK_K){
-            fire=true;
-            zidan=2;
-        }
+
 
 
     }
@@ -151,9 +154,7 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         if (e.getKeyCode()==KeyEvent.VK_J){
             fire=false;
         }
-        if (e.getKeyCode()==KeyEvent.VK_K){
-            fire=false;
-        }
+
 
     }
 

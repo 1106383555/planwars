@@ -19,8 +19,8 @@ public class GameFrame extends Frame {
 
 
     private static int score = 0;
-    public static int blood =3;
-    public static int boosblood=30;
+    public static int blood = 3;
+    public static int boosblood = 50;
 
     public static int getScore() {
         return score;
@@ -48,10 +48,14 @@ public class GameFrame extends Frame {
     public final List<EnemyBullet> enemyBulletList = new CopyOnWriteArrayList<>();
 
     //创建道具集合
-    public final List<Prop> propList=new CopyOnWriteArrayList<>();
+    public final List<Prop> propList = new CopyOnWriteArrayList<>();
+    public final List<Upb> upbList = new CopyOnWriteArrayList<>();
 
     //创建终极boos
-    private Boos boos=new Boos();
+    private Boos boos = new Boos();
+    private Ending ending=new Ending();
+
+    public static int bulletkey=1;
 
     @Override
     public void paint(Graphics g) {
@@ -63,15 +67,18 @@ public class GameFrame extends Frame {
             boos.draw(g);
 
 
+
             for (Bullet bullet : bulletList) {
                 bullet.draw(g);
-
+            }
+            for (Upb upb : upbList) {
+                upb.draw(g);
             }
             g.setFont(new Font("楷体", 0, 30));
             g.setColor(Color.red);
             g.drawString("得分：" + score, 80, 100);
             g.drawString("生命值：" + blood, 80, 130);
-            g.drawString("Boss生命值："+boosblood,80,160);
+            g.drawString("Boss生命值：" + boosblood, 80, 160);
 
             for (EnemyBullet enemyBullet : enemyBulletList) {
                 enemyBullet.draw(g);
@@ -84,32 +91,41 @@ public class GameFrame extends Frame {
             for (Prop prop : propList) {
                 prop.draw(g);
             }
-
-
-            //碰撞检测
+            /**
+             *碰撞检测
+             */
+            //我方子弹与敌方飞机的碰撞
             for (Bullet bullet : bulletList) {
                 bullet.collisionTesting(enemyPlanList);
             }
+//            敌方子弹与我方飞机的碰撞
             for (EnemyBullet enemyBullet : enemyBulletList) {
                 enemyBullet.collisionTesting(plane);
             }
+            //敌方飞机与我方飞机的碰撞
             for (EnemyPlan enemyPlan : enemyPlanList) {
                 enemyPlan.collisionTesting(plane);
             }
+            //血量道具与我方飞机的碰撞
             for (Prop prop : propList) {
                 prop.collisionTesting(plane);
             }
-            if(Boos.isSw()){
+
+
+            //子弹升级道具与我方飞机的碰撞
+            for (Upb upb : upbList) {
+                upb.collisionTesting(plane);
+
+            }
+            //终极Boss与我方飞机与子弹的碰撞
+            if (Boos.isSw()) {
                 boos.collisionTesting(plane);
                 boos.collisionTesting(bulletList);
             }
-
-
-
-
-
         }
-
+        if (gameOver){
+            ending.draw(g);
+        }
     }
 
     /**
@@ -145,8 +161,6 @@ public class GameFrame extends Frame {
                 plane.keyReleased(e);
             }
         });
-
-
         //游戏初始时添加敌方飞机
         for (int i = 0; i < 150; i++) {
             enemyPlanList.add(new EnemyPlan(random.nextInt(650), 20 - random.nextInt(9000), 1));
@@ -155,9 +169,11 @@ public class GameFrame extends Frame {
         }
 
         //添加道具
-        for (int i = 0; i < 80; i++) {
-            propList.add(new Prop(random.nextInt(650),-random.nextInt(8000),ImageMap.get("blood1")));
-//            propList.add(new Prop(50,50,ImageMap.get("blood1")));
+        for (int i = 0; i < 50; i++) {
+            propList.add(new Prop(random.nextInt(650), -random.nextInt(8000), ImageMap.get("blood1")));
+        }
+        for (int i = 0; i < 5; i++) {
+            upbList.add(new Upb(random.nextInt(650), -random.nextInt(1000), ImageMap.get("upb")));
 
         }
 
@@ -181,6 +197,7 @@ public class GameFrame extends Frame {
             }
         }.start();
     }
+
     //解决闪屏问题
     private Image offScreenImage = null;//创建缓冲区
 

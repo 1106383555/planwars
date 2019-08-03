@@ -38,7 +38,7 @@ public class Bullet extends BaseSprite implements Drawable, Moveable {
 
     @Override
     public void move() {
-        setY(getY()-speed*2);
+        setY(getY()-speed*3);
 
     }
 
