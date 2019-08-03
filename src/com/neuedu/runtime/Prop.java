@@ -6,21 +6,20 @@ import com.neuedu.base.Moveable;
 import com.neuedu.constant.FrameConstant;
 import com.neuedu.main.GameFrame;
 import com.neuedu.util.DataStore;
-import com.neuedu.util.ImageMap;
 
 import java.awt.*;
-import java.util.List;
 
-public class EnemyBullet extends BaseSprite implements Drawable, Moveable {
-
+/**
+ * 创建道具类
+ */
+public class Prop extends BaseSprite implements Drawable, Moveable {
     private Image image;
-    private int speed= FrameConstant.GAME_SPEED*3;
+    private int speed= FrameConstant.GAME_SPEED;
 
-
-    public EnemyBullet() {
+    public Prop() {
     }
 
-    public EnemyBullet(int x, int y, Image image) {
+    public Prop(int x, int y, Image image) {
         super(x, y);
         this.image = image;
     }
@@ -30,37 +29,45 @@ public class EnemyBullet extends BaseSprite implements Drawable, Moveable {
         move();
         borderTesting();
         g.drawImage(image,getX(),getY(),image.getWidth(null),image.getHeight(null),null);
-
     }
 
+    private boolean right=true;
     @Override
     public void move() {
-        setY(getY()+speed);
+        if (right){
+            setY(getY()+speed);
+            setX(getX()+speed);
+        }else{
+            setX(getX()-speed);
+            setY(getY()+speed);
+        }
+
     }
+    //边缘检测
     public void borderTesting(){
+        //超出下边框时移除该道具
         if (getY()>FrameConstant.FRAME_HEIGHT){
             GameFrame gameFrame= DataStore.get("gameFrame");
-            gameFrame.enemyBulletList.remove(this);
+            gameFrame.propList.remove(this);
+        }
+        if (getX()>FrameConstant.FRAME_WIDTH-image.getWidth(null)){
+            right=false;
+        }
+        if (getX()<0){
+            right=true;
         }
     }
+
     @Override
     public Rectangle getRectangle() {
         return new Rectangle(getX(),getY(),image.getWidth(null),image.getHeight(null));
     }
-
-
+    //血包与我方飞机碰撞之后移除该血包
     public void collisionTesting(Plane plane){
         GameFrame gameFrame=DataStore.get("gameFrame");
         if (plane.getRectangle().intersects(this.getRectangle())){
-            //敌方子弹与我方飞机碰撞时移除子弹
-            gameFrame.enemyBulletList.remove(this);
-            GameFrame.blood--;
-            if (GameFrame.blood<0){
-                gameFrame.gameOver=true;
-            }
-
-
+            gameFrame.propList.remove(this);
+            GameFrame.blood+=1;
         }
-
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class Bullet extends BaseSprite implements Drawable, Moveable {
 
-    private int speed= FrameConstant.GAME_SPEED*6;
+    private int speed= FrameConstant.GAME_SPEED*5;
 
     private Image image;
 
@@ -29,14 +29,16 @@ public class Bullet extends BaseSprite implements Drawable, Moveable {
 
     @Override
     public void draw(Graphics g) {
-        g.drawImage(image,getX(),getY(),image.getWidth(null),image.getHeight(null),null);
         move();
         borderTesting();
+        g.drawImage(image,getX(),getY(),image.getWidth(null),image.getHeight(null),null);
+
+
     }
 
     @Override
     public void move() {
-        setY(getY()-speed);
+        setY(getY()-speed*2);
 
     }
 
@@ -56,9 +58,13 @@ public class Bullet extends BaseSprite implements Drawable, Moveable {
         for (EnemyPlan enemyPlan : enemyPlanList) {
             if (enemyPlan.getRectangle().intersects(this.getRectangle())){
                 enemyPlanList.remove(enemyPlan);
+                GameFrame.setScore(GameFrame.getScore()+1);
+                if (GameFrame.getScore()>300){
+                    Boos.setSw(true);
+                }
             }
-
         }
 
     }
+
 }

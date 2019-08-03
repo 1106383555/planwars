@@ -12,49 +12,99 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GameFrame extends Frame {
 
-    public boolean gameOver=false;
+
+    private static int score = 0;
+    public static int blood =3;
+    public static int boosblood=30;
+
+    public static int getScore() {
+        return score;
+    }
+
+    public static void setScore(int score) {
+        GameFrame.score = score;
+    }
+
+    public boolean gameOver = false;
     //创建背景对象
-    private Background bg=new Background();
+    private Background bg = new Background();
     //创建飞机对象
-    private Plane plane=new Plane();
+    private Plane plane = new Plane();
+
+    Random random = new Random();
 
     //创建我方子弹  集合
-    public final List<Bullet> bulletList=new CopyOnWriteArrayList<>();//防止并发问题使用CopyOnWriteArrayList
+    public final List<Bullet> bulletList = new CopyOnWriteArrayList<>();//防止并发问题使用CopyOnWriteArrayList
 
     //创建敌方飞机集合
-    public final List<EnemyPlan> enemyPlanList=new CopyOnWriteArrayList<>();
+    public final List<EnemyPlan> enemyPlanList = new CopyOnWriteArrayList<>();
 
     //创建敌方子弹  集合
-    public final List<EnemyBullet> enemyBulletList=new CopyOnWriteArrayList<>();
+    public final List<EnemyBullet> enemyBulletList = new CopyOnWriteArrayList<>();
+
+    //创建道具集合
+    public final List<Prop> propList=new CopyOnWriteArrayList<>();
+
+    //创建终极boos
+    private Boos boos=new Boos();
+
     @Override
     public void paint(Graphics g) {
 
-        if (!gameOver){
+        if (!gameOver) {
             bg.draw(g);
+
             plane.draw(g);
+            boos.draw(g);
+
+
             for (Bullet bullet : bulletList) {
                 bullet.draw(g);
+
             }
-//        g.setColor(Color.red);
-//        g.drawString(""+enemyBulletList.size(),100,100);
+            g.setFont(new Font("楷体", 0, 30));
+            g.setColor(Color.red);
+            g.drawString("得分：" + score, 80, 100);
+            g.drawString("生命值：" + blood, 80, 130);
+            g.drawString("Boss生命值："+boosblood,80,160);
 
             for (EnemyBullet enemyBullet : enemyBulletList) {
                 enemyBullet.draw(g);
+
             }
             for (EnemyPlan enemyPlan : enemyPlanList) {
                 enemyPlan.draw(g);
+
+            }
+            for (Prop prop : propList) {
+                prop.draw(g);
             }
 
+
+            //碰撞检测
             for (Bullet bullet : bulletList) {
                 bullet.collisionTesting(enemyPlanList);
             }
             for (EnemyBullet enemyBullet : enemyBulletList) {
                 enemyBullet.collisionTesting(plane);
             }
+            for (EnemyPlan enemyPlan : enemyPlanList) {
+                enemyPlan.collisionTesting(plane);
+            }
+            for (Prop prop : propList) {
+                prop.collisionTesting(plane);
+            }
+            if(Boos.isSw()){
+                boos.collisionTesting(plane);
+                boos.collisionTesting(bulletList);
+            }
+
+
 
 
 
@@ -65,9 +115,9 @@ public class GameFrame extends Frame {
     /**
      * 初始化窗口
      */
-    public void init(){
+    public void init() {
         //设置好尺寸
-        setSize(FrameConstant.FRAME_WIDTH,FrameConstant.FRAME_HEIGHT);
+        setSize(FrameConstant.FRAME_WIDTH, FrameConstant.FRAME_HEIGHT);
 
         enableInputMethods(false);
         //设置窗口居中
@@ -97,22 +147,29 @@ public class GameFrame extends Frame {
         });
 
 
+        //游戏初始时添加敌方飞机
+        for (int i = 0; i < 150; i++) {
+            enemyPlanList.add(new EnemyPlan(random.nextInt(650), 20 - random.nextInt(9000), 1));
+            enemyPlanList.add(new EnemyPlan(random.nextInt(650), 20 - random.nextInt(9000), 2));
+            enemyPlanList.add(new EnemyPlan(random.nextInt(650), 20 - random.nextInt(9000), 3));
+        }
+
+        //添加道具
+        for (int i = 0; i < 80; i++) {
+            propList.add(new Prop(random.nextInt(650),-random.nextInt(8000),ImageMap.get("blood1")));
+//            propList.add(new Prop(50,50,ImageMap.get("blood1")));
+
+        }
 
 
-        enemyPlanList.add(new EnemyPlan(300,60, ImageMap.get("ep01")));
-        enemyPlanList.add(new EnemyPlan(200,60, ImageMap.get("ep01")));
-        enemyPlanList.add(new EnemyPlan(600,60, ImageMap.get("ep01")));
-        enemyPlanList.add(new EnemyPlan(100,60, ImageMap.get("ep01")));
-        enemyPlanList.add(new EnemyPlan(500,60, ImageMap.get("ep01")));
-        enemyPlanList.add(new EnemyPlan(400,60, ImageMap.get("ep01")));
         //窗口始终打开状态
         setVisible(true);
 
 
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
-                while (true){
+                while (true) {
                     repaint();
                     try {
                         Thread.sleep(20);
@@ -124,12 +181,13 @@ public class GameFrame extends Frame {
             }
         }.start();
     }
-
+    //解决闪屏问题
     private Image offScreenImage = null;//创建缓冲区
+
     @Override
     public void update(Graphics g) {
-        if(offScreenImage == null) {
-            offScreenImage = this.createImage(FrameConstant.FRAME_WIDTH,FrameConstant.FRAME_HEIGHT);
+        if (offScreenImage == null) {
+            offScreenImage = this.createImage(FrameConstant.FRAME_WIDTH, FrameConstant.FRAME_HEIGHT);
         }
         Graphics gOff = offScreenImage.getGraphics();//创建离线图片的实例，在图片缓冲区绘图
 

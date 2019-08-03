@@ -17,12 +17,14 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
 
     private boolean up,right,down,left;
     private boolean fire;
-    private int speed=FrameConstant.GAME_SPEED*5;
+    private int speed=FrameConstant.GAME_SPEED*8;
     private int index=0;
 
     public Plane() {
-        this((FrameConstant.FRAME_WIDTH-ImageMap.get("my01").getWidth(null)/2)/2,
-                FrameConstant.FRAME_HEIGHT-ImageMap.get("my01").getHeight(null), ImageMap.get("my01"));
+        this(FrameConstant.FRAME_WIDTH/2-ImageMap.get("my01").getWidth(null)/2,
+
+                650,//改进
+                ImageMap.get("my01"));
     }
 
     public Plane(int x, int y, Image image) {
@@ -32,21 +34,26 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
 
     @Override
     public void draw(Graphics g) {
-        g.drawImage(image,getX(),getY()+30,image.getWidth(null)/2,image.getHeight(null)/2,null);
         //调用move方法
         move();
         borderTesting();
         fire();
+        g.drawImage(image,getX(),getY()+30,image.getWidth(null),image.getHeight(null),null);
+
+
+
 
         //子弹控制器,if是为了没有开火时不进行循环
         if (fire){
             index++;
-            if(index>10){
+            if(index>8){
                 index=0;
             }
         }
 
     }
+
+    private int zidan;
 
     /**
      * 开火方法
@@ -54,12 +61,20 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
      * 创建一个子弹对象放入到gameFrame集合中
      */
     public void fire(){
-        if (fire&&index==0){
+        if (fire&&index==0&&zidan==1){
             GameFrame gameFrame=DataStore.get("gameFrame");
             gameFrame.bulletList.add(new Bullet(
-                    getX()+image.getWidth(null)/4-ImageMap.get("mb01").getWidth(null)/2,
+                    getX()+image.getWidth(null)/2-ImageMap.get("mb01").getWidth(null)/2,
                     getY()-ImageMap.get("mb01").getHeight(null),
                     ImageMap.get("mb01")
+            ));
+        }
+        if (fire&&index==0&&zidan==2){
+            GameFrame gameFrame=DataStore.get("gameFrame");
+            gameFrame.bulletList.add(new Bullet(
+                    getX()+image.getWidth(null)/2-ImageMap.get("mb02").getWidth(null)/2,
+                    getY()-ImageMap.get("mb02").getHeight(null),
+                    ImageMap.get("mb02")
             ));
         }
     }
@@ -85,14 +100,14 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         if(getX()<0){
             setX(0);
         }
-        if(getX()>FrameConstant.FRAME_WIDTH-image.getWidth(null)/2){
-            setX(FrameConstant.FRAME_WIDTH-image.getWidth(null)/2);
+        if(getX()>FrameConstant.FRAME_WIDTH-image.getWidth(null)){
+            setX(FrameConstant.FRAME_WIDTH-image.getWidth(null));
         }
         if(getY()<0){
             setY(0);
         }
-        if(getY()>FrameConstant.FRAME_HEIGHT-image.getHeight(null)){
-            setY(FrameConstant.FRAME_HEIGHT-image.getHeight(null));
+        if(getY()>650){
+            setY(650);
         }
     }
 
@@ -111,7 +126,13 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         }
         if (e.getKeyCode()==KeyEvent.VK_J){
             fire=true;
+            zidan=1;
         }
+        if (e.getKeyCode()==KeyEvent.VK_K){
+            fire=true;
+            zidan=2;
+        }
+
 
     }
     public void keyReleased(KeyEvent e) {
@@ -130,9 +151,15 @@ public class Plane extends BaseSprite implements Drawable, Moveable {
         if (e.getKeyCode()==KeyEvent.VK_J){
             fire=false;
         }
+        if (e.getKeyCode()==KeyEvent.VK_K){
+            fire=false;
+        }
+
     }
+
+    //有bug，有偏移
     @Override
     public Rectangle getRectangle() {
-        return new Rectangle(getX()+ImageMap.get("my01").getWidth(null)/4,getY()+ImageMap.get("my01").getHeight(null)/4,image.getWidth(null)/2,image.getHeight(null)/2);
+        return new Rectangle(getX()+20,getY()+20,image.getWidth(null)/3,image.getHeight(null)/3);
     }
 }
